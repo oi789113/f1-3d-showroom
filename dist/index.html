@@ -38,8 +38,9 @@ scene.background=new THREE.Color(0x04070d);
 scene.fog=new THREE.Fog(0x04070d,24,55);
 const camera=new THREE.PerspectiveCamera(30,innerWidth/innerHeight,.03,120);
 camera.position.set(6.8,2.7,7.9);
-const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});
-renderer.setPixelRatio(Math.min(devicePixelRatio,2.25));
+const isMobile=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)||innerWidth<760;
+const renderer=new THREE.WebGLRenderer({antialias:!isMobile,powerPreference:'high-performance'});
+renderer.setPixelRatio(Math.min(devicePixelRatio,isMobile?1.25:2.25));
 renderer.setSize(innerWidth,innerHeight);
 renderer.shadowMap.enabled=true;
 renderer.shadowMap.type=THREE.PCFSoftShadowMap;
@@ -57,7 +58,7 @@ const carbonNormal=makeCarbonNormal();
 const controls=new OrbitControls(camera,renderer.domElement);
 controls.enableDamping=true; controls.dampingFactor=.055; controls.minDistance=3.5; controls.maxDistance=18; controls.target.set(0,.72,0); controls.autoRotate=true; controls.autoRotateSpeed=.65;
 const hemi=new THREE.HemisphereLight(0xaac5e3,0x070a12,2.2); scene.add(hemi);
-const key=new THREE.DirectionalLight(0xffffff,4.4); key.position.set(6,9,7); key.castShadow=true; key.shadow.mapSize.set(4096,4096); key.shadow.camera.near=1; key.shadow.camera.far=35; scene.add(key);
+const key=new THREE.DirectionalLight(0xffffff,4.4); key.position.set(6,9,7); key.castShadow=true; key.shadow.mapSize.set(isMobile?1024:4096,isMobile?1024:4096); key.shadow.camera.near=1; key.shadow.camera.far=35; scene.add(key);
 const rim=new THREE.DirectionalLight(0x2766c9,3.1); rim.position.set(-8,5,-6); scene.add(rim);
 const warm=new THREE.PointLight(0xffa629,15,17,2); warm.position.set(3,2.5,4); scene.add(warm);
 const studio=new THREE.Group(); scene.add(studio);
@@ -69,7 +70,8 @@ const hdrLoader=new RGBELoader();
 const pmrem=new THREE.PMREMGenerator(renderer); pmrem.compileEquirectangularShader();
 hdrLoader.load('https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/2k/venice_sunset_2k.hdr',(hdr)=>{const env=pmrem.fromEquirectangular(hdr).texture; scene.environment=env; hdr.dispose(); pmrem.dispose();});
 const loader=new GLTFLoader();
-loader.load('./assets/rb18.glb',(gltf)=>{
+const modelUrl=isMobile?'./assets/rb18-mobile.glb':'./assets/rb18.glb';
+loader.load(modelUrl,(gltf)=>{
   const asset=gltf.scene;
   const bounds=new THREE.Box3().setFromObject(asset);
   const size=bounds.getSize(new THREE.Vector3());
@@ -93,7 +95,7 @@ loader.load('./assets/rb18.glb',(gltf)=>{
 });
 function view(pos,target=[0,.72,0]){camera.position.set(...pos);controls.target.set(...target);controls.update()}
 document.querySelector('#auto').onclick=()=>{controls.autoRotate=!controls.autoRotate;document.querySelector('#auto').classList.toggle('on',controls.autoRotate)};
-document.querySelector('#detail').onclick=()=>{const on=renderer.getPixelRatio()>1.2;renderer.setPixelRatio(on?1.15:Math.min(devicePixelRatio,2.25));document.querySelector('#detail').classList.toggle('on',!on);document.querySelector('#detail').parentElement.querySelector('span').textContent=on?'Performance':'High detail'};
+document.querySelector('#detail').onclick=()=>{const on=renderer.getPixelRatio()>1.2;renderer.setPixelRatio(on?1.0:Math.min(devicePixelRatio,isMobile?1.25:2.25));document.querySelector('#detail').classList.toggle('on',!on);document.querySelector('#detail').parentElement.querySelector('span').textContent=on?'Performance':'High detail'};
 document.querySelector('#lights').onclick=()=>{const on=key.intensity>0;[key,rim,warm,hemi].forEach(l=>l.intensity=on?0:(l===key?4.4:l===rim?3.1:l===warm?15:2.2));document.querySelector('#lights').classList.toggle('on',!on)};
 document.querySelector('#front').onclick=()=>view([0,1.9,10],[0,.72,0]);
 document.querySelector('#side').onclick=()=>view([10,1.45,0],[0,.72,0]);
@@ -108,5 +110,5 @@ document.querySelector('#export').onclick=()=>{
  const exporter=new GLTFExporter(); exporter.parse(loadedRoot,(g)=>{const blob=new Blob([g],{type:'application/octet-stream'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='rb18-2022.glb';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);const t=document.querySelector('#toast');t.textContent='GLB export ready';t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200)},{binary:true});
 };
 let last=performance.now(),frames=0;function animate(now){requestAnimationFrame(animate);frames++;if(now-last>900){document.querySelector('#fps').textContent=(Math.round(frames*1000/(now-last))+' FPS · '+(modelReady?'RB18 GLB · ':'MODEL LOADING · ')+'SUPER-RES · HDR PBR · 4K READY');frames=0;last=now}controls.update();renderer.render(scene,camera)}requestAnimationFrame(animate);
-addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,innerWidth<700?1.5:2.25))});
+addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,isMobile?1.25:2.25))});
 </script></body></html>

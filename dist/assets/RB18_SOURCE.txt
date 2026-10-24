@@ -1,0 +1,9 @@
+Model: Red Bull RB18 F1 2022 Car
+Source: FetchCFD project 2999
+Project URL: https://fetchcfd.com/threeDViewGltf/2999-red-bull-rb18-f1-2022-car-3d-model
+Direct GLB: https://s3-eu-west-1.amazonaws.com/fetchcfd/original/file-1667386677367.glb
+Original creator credited by source page: SRT Performance / TheRealSRT (Sketchfab)
+The FetchCFD page describes the model as free for download and for CFD/rendering use. Verify the source page's current terms before any public redistribution.
+HDRI: Poly Haven Venice Sunset 1K (CC0)
+Clarity note: source RB18 GLB embeds 512-level base-color atlases. Viewer uses 2K PMREM HDR, anisotropic filtering, procedural carbon normal detail, and true 3840x2160 capture mode.
+Super-resolution pass: embedded base-color atlases were reconstructed with an FSRCNN x4 model and resized to a maximum 2048-pixel dimension before being re-embedded. This improves edge continuity and close-view sharpness, but does not create new physically measured source detail.

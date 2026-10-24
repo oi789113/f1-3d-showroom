@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Oracle Red Bull Racing · 3D Engineering View</title>
+<style>
+:root{--ink:#f6f8fb;--muted:#93a4b8;--line:rgba(255,255,255,.12);--panel:rgba(8,13,22,.76);--red:#e5002b;--yellow:#ffd400;--blue:#071322}
+*{box-sizing:border-box}html,body{margin:0;height:100%;overflow:hidden;background:#03070d;color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}#app{position:fixed;inset:0}canvas{display:block;touch-action:none}.hud{position:absolute;inset:0;pointer-events:none}.topbar{position:absolute;top:0;left:0;right:0;padding:24px 30px;display:flex;align-items:flex-start;justify-content:space-between;background:linear-gradient(180deg,rgba(2,5,10,.82),transparent)}.brand{display:flex;gap:14px;align-items:center}.mark{width:40px;height:40px;border-radius:11px;background:linear-gradient(145deg,#ffd400 0 45%,#e60032 46% 62%,#09233f 63%);box-shadow:0 0 32px rgba(229,0,43,.25)}.eyebrow{letter-spacing:.22em;font-size:10px;color:var(--yellow);font-weight:700}.title{font-size:20px;font-weight:800;letter-spacing:-.03em}.subtitle{font-size:12px;color:var(--muted);margin-top:4px}.status{font-size:11px;color:#a7f3c1;display:flex;gap:7px;align-items:center;margin-top:7px}.dot{width:7px;height:7px;border-radius:99px;background:#43e084;box-shadow:0 0 12px #43e084}.panel{position:absolute;left:24px;bottom:24px;width:280px;padding:16px;border:1px solid var(--line);background:var(--panel);backdrop-filter:blur(18px);border-radius:16px;pointer-events:auto;box-shadow:0 16px 50px rgba(0,0,0,.24)}.panel h3{margin:0 0 12px;font-size:11px;letter-spacing:.16em;color:var(--yellow)}.row{display:flex;justify-content:space-between;align-items:center;margin:10px 0;font-size:12px;color:#dce7f6}.value{font-variant-numeric:tabular-nums;color:#fff}.switch{position:relative;width:36px;height:20px;border-radius:999px;background:#263346;cursor:pointer}.switch:after{content:'';position:absolute;width:14px;height:14px;top:3px;left:3px;border-radius:50%;background:#9fb1c6;transition:.2s}.switch.on{background:var(--red)}.switch.on:after{left:19px;background:white}.actions{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}.btn{appearance:none;border:1px solid var(--line);color:#e9eff8;background:rgba(255,255,255,.06);padding:9px 11px;border-radius:9px;font-size:11px;cursor:pointer;transition:.2s}.btn:hover{background:rgba(255,255,255,.14);border-color:rgba(255,212,0,.48)}.btn.primary{background:var(--yellow);color:#151b22;border-color:var(--yellow);font-weight:800}.legend{position:absolute;right:24px;bottom:24px;width:240px;pointer-events:none}.spec{border-left:2px solid var(--yellow);padding-left:12px;margin-bottom:11px}.spec b{display:block;font-size:15px}.spec span{font-size:11px;color:var(--muted)}.hint{position:absolute;top:100px;left:50%;transform:translateX(-50%);font-size:11px;letter-spacing:.12em;color:#b8c6d7;background:rgba(8,13,22,.54);padding:8px 13px;border:1px solid var(--line);border-radius:999px;backdrop-filter:blur(8px)}.badge{position:absolute;right:30px;top:91px;font-size:10px;color:var(--muted);letter-spacing:.1em}.toast{position:absolute;left:50%;bottom:30px;transform:translate(-50%,20px);padding:11px 14px;border-radius:10px;background:#111d2d;color:#eaf2fb;font-size:12px;opacity:0;transition:.25s;pointer-events:none}.toast.show{opacity:1;transform:translate(-50%,0)}@media(max-width:700px){.topbar{padding:16px}.panel{left:14px;bottom:14px;width:calc(100% - 28px);padding:13px}.legend,.badge{display:none}.hint{top:82px;font-size:9px}.title{font-size:17px}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div class="hud">
+  <header class="topbar"><div class="brand"><div class="mark"></div><div><div class="eyebrow">ORACLE RED BULL RACING · RB18</div><div class="title">RB Engineering View</div><div class="subtitle">Interactive real-time vehicle study · licensed textured GLB</div><div class="status"><span class="dot"></span><span id="fps">120 FPS TARGET · WEBGL2</span></div></div></div></header>
+  <div class="hint">DRAG TO ORBIT · WHEEL TO ZOOM · SHIFT + DRAG TO PAN</div>
+  <div class="badge">RB18 GLB · SUPER-RES · 4K CAPTURE</div>
+  <section class="panel"><h3>VIEW CONTROLS</h3>
+    <div class="row"><span>Auto rotate</span><span id="auto" class="switch on"></span></div>
+    <div class="row"><span>High detail</span><span id="detail" class="switch on"></span></div>
+    <div class="row"><span>Studio lights</span><span id="lights" class="switch on"></span></div>
+    <div class="actions"><button class="btn" id="front">FRONT</button><button class="btn" id="side">SIDE</button><button class="btn" id="reset">RESET</button><button class="btn primary" id="capture">4K CAPTURE</button><button class="btn" id="export">EXPORT GLB</button></div>
+  </section>
+  <aside class="legend"><div class="spec"><b>1,020 mm</b><span>overall height</span></div><div class="spec"><b>5,500 mm</b><span>race-ready length</span></div><div class="spec"><b>18 in</b><span>forged wheel package</span></div></aside>
+  <div id="toast" class="toast">GLB export ready</div>
+</div>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three';
+import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+import {RGBELoader} from 'three/addons/loaders/RGBELoader.js';
+import {GLTFExporter} from 'three/addons/exporters/GLTFExporter.js';
+
+const app=document.querySelector('#app');
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0x04070d);
+scene.fog=new THREE.Fog(0x04070d,24,55);
+const camera=new THREE.PerspectiveCamera(30,innerWidth/innerHeight,.03,120);
+camera.position.set(6.8,2.7,7.9);
+const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2.25));
+renderer.setSize(innerWidth,innerHeight);
+renderer.shadowMap.enabled=true;
+renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+renderer.outputColorSpace=THREE.SRGBColorSpace;
+renderer.toneMapping=THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure=1.12;
+app.appendChild(renderer.domElement);
+function makeCarbonNormal(){
+ const c=document.createElement('canvas'); c.width=c.height=256; const x=c.getContext('2d');
+ x.fillStyle='rgb(128,128,255)'; x.fillRect(0,0,256,256); x.lineWidth=2;
+ for(let i=-256;i<512;i+=12){x.strokeStyle='rgb(166,166,255)';x.beginPath();x.moveTo(i,0);x.lineTo(i+256,256);x.stroke();x.strokeStyle='rgb(98,98,255)';x.beginPath();x.moveTo(i+4,0);x.lineTo(i+260,256);x.stroke()}
+ const t=new THREE.CanvasTexture(c); t.colorSpace=THREE.NoColorSpace; t.wrapS=t.wrapT=THREE.RepeatWrapping; t.repeat.set(18,18); t.anisotropy=renderer.capabilities.getMaxAnisotropy(); return t;
+}
+const carbonNormal=makeCarbonNormal();
+const controls=new OrbitControls(camera,renderer.domElement);
+controls.enableDamping=true; controls.dampingFactor=.055; controls.minDistance=3.5; controls.maxDistance=18; controls.target.set(0,.72,0); controls.autoRotate=true; controls.autoRotateSpeed=.65;
+const hemi=new THREE.HemisphereLight(0xaac5e3,0x070a12,2.2); scene.add(hemi);
+const key=new THREE.DirectionalLight(0xffffff,4.4); key.position.set(6,9,7); key.castShadow=true; key.shadow.mapSize.set(4096,4096); key.shadow.camera.near=1; key.shadow.camera.far=35; scene.add(key);
+const rim=new THREE.DirectionalLight(0x2766c9,3.1); rim.position.set(-8,5,-6); scene.add(rim);
+const warm=new THREE.PointLight(0xffa629,15,17,2); warm.position.set(3,2.5,4); scene.add(warm);
+const studio=new THREE.Group(); scene.add(studio);
+const ground=new THREE.Mesh(new THREE.CircleGeometry(24,96),new THREE.MeshStandardMaterial({color:0x070b12,roughness:.72,metalness:.18})); ground.rotation.x=-Math.PI/2; ground.position.y=-.04; ground.receiveShadow=true; scene.add(ground);
+const ring=new THREE.Mesh(new THREE.RingGeometry(5.25,5.28,128),new THREE.MeshBasicMaterial({color:0x1c3858,transparent:true,opacity:.65})); ring.rotation.x=-Math.PI/2; ring.position.y=.01; scene.add(ring);
+const loadedRoot=new THREE.Group(); studio.add(loadedRoot); let modelReady=false;
+const status=document.querySelector('#fps');
+const hdrLoader=new RGBELoader();
+const pmrem=new THREE.PMREMGenerator(renderer); pmrem.compileEquirectangularShader();
+hdrLoader.load('https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/2k/venice_sunset_2k.hdr',(hdr)=>{const env=pmrem.fromEquirectangular(hdr).texture; scene.environment=env; hdr.dispose(); pmrem.dispose();});
+const loader=new GLTFLoader();
+loader.load('./assets/rb18.glb',(gltf)=>{
+  const asset=gltf.scene;
+  const bounds=new THREE.Box3().setFromObject(asset);
+  const size=bounds.getSize(new THREE.Vector3());
+  const center=bounds.getCenter(new THREE.Vector3());
+  const scale=6.45/Math.max(size.x,size.z);
+  asset.scale.setScalar(scale);
+  asset.position.set(-center.x*scale,.06-bounds.min.y*scale,-center.z*scale);
+  asset.traverse((o)=>{
+    if(!o.isMesh) return;
+    o.castShadow=true; o.receiveShadow=true;
+    if(o.material){
+      const mats=Array.isArray(o.material)?o.material:[o.material];
+      mats.forEach(m=>{m.envMapIntensity=1.35; if(m.roughness!==undefined)m.roughness=Math.max(.2,Math.min(.54,m.roughness)); if(m.clearcoat!==undefined)m.clearcoat=Math.max(m.clearcoat,.18); if(m.map){m.map.colorSpace=THREE.SRGBColorSpace; m.map.anisotropy=renderer.capabilities.getMaxAnisotropy(); m.map.minFilter=THREE.LinearMipmapLinearFilter; m.map.magFilter=THREE.LinearFilter; m.map.needsUpdate=true;} if(m.normalMap){m.normalMap.colorSpace=THREE.NoColorSpace; m.normalMap.anisotropy=renderer.capabilities.getMaxAnisotropy();} if(m.metalnessMap)m.metalnessMap.colorSpace=THREE.NoColorSpace; if(m.roughnessMap)m.roughnessMap.colorSpace=THREE.NoColorSpace; if(/carwing|bargeboard|halo|chassis|drs|bague/i.test(m.name) && !m.normalMap && 'normalMap' in m){m.normalMap=carbonNormal; if(m.normalScale)m.normalScale.set(.12,.12); m.needsUpdate=true;}});
+    }
+  });
+  loadedRoot.add(asset); modelReady=true;
+  status.textContent='RB18 GLB LOADED · SUPER-RES TEXTURES · HDR PBR';
+},undefined,(err)=>{
+  console.error(err); status.textContent='MODEL LOAD FAILED · SEE STATUS';
+  const t=document.querySelector('#toast'); t.textContent='Model load failed: '+(err?.message||'resource unavailable'); t.classList.add('show');
+});
+function view(pos,target=[0,.72,0]){camera.position.set(...pos);controls.target.set(...target);controls.update()}
+document.querySelector('#auto').onclick=()=>{controls.autoRotate=!controls.autoRotate;document.querySelector('#auto').classList.toggle('on',controls.autoRotate)};
+document.querySelector('#detail').onclick=()=>{const on=renderer.getPixelRatio()>1.2;renderer.setPixelRatio(on?1.15:Math.min(devicePixelRatio,2.25));document.querySelector('#detail').classList.toggle('on',!on);document.querySelector('#detail').parentElement.querySelector('span').textContent=on?'Performance':'High detail'};
+document.querySelector('#lights').onclick=()=>{const on=key.intensity>0;[key,rim,warm,hemi].forEach(l=>l.intensity=on?0:(l===key?4.4:l===rim?3.1:l===warm?15:2.2));document.querySelector('#lights').classList.toggle('on',!on)};
+document.querySelector('#front').onclick=()=>view([0,1.9,10],[0,.72,0]);
+document.querySelector('#side').onclick=()=>view([10,1.45,0],[0,.72,0]);
+document.querySelector('#reset').onclick=()=>view([6.8,2.7,7.9],[0,.72,0]);
+document.querySelector('#capture').onclick=async()=>{
+ if(!modelReady){const t=document.querySelector('#toast');t.textContent='RB18 GLB is still loading';t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1600);return}
+ const oldPixel=renderer.getPixelRatio(); const oldSize=renderer.getSize(new THREE.Vector2()); const oldAspect=camera.aspect;
+ try{renderer.setPixelRatio(1);renderer.setSize(3840,2160,false);camera.aspect=3840/2160;camera.updateProjectionMatrix();controls.update();renderer.render(scene,camera);const blob=await new Promise(resolve=>renderer.domElement.toBlob(resolve,'image/png'));if(!blob)throw new Error('PNG capture unavailable');const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='rb18-4k-presentation.png';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1500);const t=document.querySelector('#toast');t.textContent='3840×2160 capture ready';t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200)}catch(err){const t=document.querySelector('#toast');t.textContent='4K capture failed: '+err.message;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2400)}finally{renderer.setPixelRatio(oldPixel);renderer.setSize(oldSize.x,oldSize.y,false);camera.aspect=oldAspect;camera.updateProjectionMatrix()}
+};
+document.querySelector('#export').onclick=()=>{
+ if(!modelReady){const t=document.querySelector('#toast');t.textContent='GLB is still loading';t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1600);return}
+ const exporter=new GLTFExporter(); exporter.parse(loadedRoot,(g)=>{const blob=new Blob([g],{type:'application/octet-stream'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='rb18-2022.glb';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);const t=document.querySelector('#toast');t.textContent='GLB export ready';t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200)},{binary:true});
+};
+let last=performance.now(),frames=0;function animate(now){requestAnimationFrame(animate);frames++;if(now-last>900){document.querySelector('#fps').textContent=(Math.round(frames*1000/(now-last))+' FPS · '+(modelReady?'RB18 GLB · ':'MODEL LOADING · ')+'SUPER-RES · HDR PBR · 4K READY');frames=0;last=now}controls.update();renderer.render(scene,camera)}requestAnimationFrame(animate);
+addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,innerWidth<700?1.5:2.25))});
+</script></body></html>

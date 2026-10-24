@@ -18,7 +18,7 @@
   <section class="panel"><h3>VIEW CONTROLS</h3>
     <div class="row"><span>Auto rotate</span><span id="auto" class="switch on"></span></div>
     <div class="row"><span>High detail</span><span id="detail" class="switch on"></span></div>
-    <div class="row"><span>Studio lights</span><span id="lights" class="switch on"></span></div>
+    <div class="row"><span>Studio lights</span><span id="lights" class="switch on"></span></div><div class="row"><span>Model quality</span><select id="quality"><option value="auto">AUTO</option><option value="high">HIGH DETAIL</option><option value="mobile">LIGHT</option></select></div>
     <div class="actions"><button class="btn" id="front">FRONT</button><button class="btn" id="side">SIDE</button><button class="btn" id="reset">RESET</button><button class="btn primary" id="capture">4K CAPTURE</button><button class="btn" id="export">EXPORT GLB</button></div>
   </section>
   <aside class="legend"><div class="spec"><b>1,020 mm</b><span>overall height</span></div><div class="spec"><b>5,500 mm</b><span>race-ready length</span></div><div class="spec"><b>18 in</b><span>forged wheel package</span></div></aside>
@@ -38,7 +38,9 @@ scene.background=new THREE.Color(0x04070d);
 scene.fog=new THREE.Fog(0x04070d,24,55);
 const camera=new THREE.PerspectiveCamera(30,innerWidth/innerHeight,.03,120);
 camera.position.set(6.8,2.7,7.9);
-const isMobile=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)||innerWidth<760;
+const forcedQuality=new URLSearchParams(location.search).get('quality')||'auto';
+const isMobile=forcedQuality==='mobile'||(forcedQuality!=='high'&&(/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)||innerWidth<760));
+const qualitySelect=document.querySelector('#quality'); qualitySelect.value=forcedQuality; qualitySelect.onchange=()=>{const u=new URL(location.href);u.searchParams.set('quality',qualitySelect.value);location.href=u.toString()};
 const renderer=new THREE.WebGLRenderer({antialias:!isMobile,powerPreference:'high-performance'});
 renderer.setPixelRatio(Math.min(devicePixelRatio,isMobile?1.25:2.25));
 renderer.setSize(innerWidth,innerHeight);
@@ -70,7 +72,7 @@ const hdrLoader=new RGBELoader();
 const pmrem=new THREE.PMREMGenerator(renderer); pmrem.compileEquirectangularShader();
 hdrLoader.load('https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/2k/venice_sunset_2k.hdr',(hdr)=>{const env=pmrem.fromEquirectangular(hdr).texture; scene.environment=env; hdr.dispose(); pmrem.dispose();});
 const loader=new GLTFLoader();
-const modelUrl=isMobile?'./assets/rb18-mobile.glb':'./assets/rb18.glb';
+const modelUrl=(forcedQuality==='high'||(!isMobile&&forcedQuality==='auto'))?'./assets/rb18.glb':'./assets/rb18-mobile.glb';
 loader.load(modelUrl,(gltf)=>{
   const asset=gltf.scene;
   const bounds=new THREE.Box3().setFromObject(asset);
